@@ -1,0 +1,7 @@
+# VSCode
+.vscode
+
+# Build files
+*.s
+*.bin
+*.sym
