@@ -1,4 +1,4 @@
-TARGET=mirage
+TARGET=mxbx_mirage
 LIB=/mnt/c/Prj/Altera/C/moxiebox/modules/lib
 
 FILES = $(TARGET) $(LIB)/mouse $(LIB)/sprintf $(LIB)/string $(LIB)/stdio $(LIB)/graphics 

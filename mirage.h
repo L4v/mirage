@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <sprintf.h>
-#include <consts.h>
-#include <graphics.h>
+#ifndef MIRAGE_H
 
 #define TARGET_MS_PER_FRAME 34
 
@@ -20,24 +16,35 @@ typedef struct button_state_st
 {
     int HalfTransitionCount;
     char EndedDown;
-} button_state;
+} mxbx_button_state;
 
-typedef struct keyboard_st
+typedef struct mxbx_keyboard_st
 {
     union
     {
-        button_state Buttons[4];
+        mxbx_button_state Buttons[4];
         struct
         {
-            button_state MoveForward;
-            button_state MoveBackward;
-            button_state StrafeLeft;
-            button_state StrafeRight;
+            mxbx_button_state MoveForward;
+            mxbx_button_state MoveBackward;
+            mxbx_button_state StrafeLeft;
+            mxbx_button_state StrafeRight;
         };
     };
-} keyboard;
+} mxbx_keyboard;
 
-typedef struct input_st
+typedef struct mxbx_input_st
 {
-    keyboard KeyboardController;
-} input;
+    mxbx_keyboard KeyboardController;
+} mxbx_input;
+
+typedef struct mxbx_renderer_st
+{
+    short *Backbuffer;
+    int BackbufferW;
+    int BackbufferH;
+    int BackbufferStride;
+} mxbx_renderer;
+
+#define MIRAGE_H
+#endif
