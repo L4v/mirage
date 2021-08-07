@@ -1,6 +1,6 @@
 #ifndef MIRAGE_H
 
-#define TARGET_MS_PER_FRAME 34
+#define TARGET_MS_PER_FRAME 34 // ~30fps
 
 #define BLUE   0x1
 #define GREEN  0x2
@@ -11,6 +11,7 @@
 #define WHITE  0x7
 
 #define ArrayCount(array) (sizeof(array) / sizeof((array)[0]))
+#define ABS(x) (((x) < 0) ? -(x) : (x))
 
 typedef struct button_state_st
 {
@@ -37,14 +38,6 @@ typedef struct mxbx_input_st
 {
     mxbx_keyboard KeyboardController;
 } mxbx_input;
-
-typedef struct mxbx_renderer_st
-{
-    short *Backbuffer;
-    int BackbufferW;
-    int BackbufferH;
-    int BackbufferStride;
-} mxbx_renderer;
 
 #define MIRAGE_H
 #endif

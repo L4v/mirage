@@ -1,4 +1,5 @@
 #include "mirage.h"
+#include "renderer.c"
 
 void
 HandleInput(mxbx_input *input)
@@ -15,6 +16,4 @@ void
 UpdateAndRender(mxbx_input *input, mxbx_renderer *renderer)
 {
     HandleInput(input);
-    renderer->Backbuffer[0] = 0x1234;
-    renderer->Backbuffer[renderer->BackbufferW * renderer->BackbufferH - 1] = 0x4321;
 }

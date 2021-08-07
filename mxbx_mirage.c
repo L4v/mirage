@@ -76,6 +76,7 @@ main()
     renderer.BackbufferW = BACKBUFFER_W;
     renderer.BackbufferH = BACKBUFFER_H;
     renderer.BackbufferStride = 2;
+    renderer.BackbufferPixelPerStride = 4;
     renderer.Backbuffer = __backbuffer;
     // GAME LOOP
     while(1)
@@ -99,9 +100,12 @@ main()
         }
 
         UpdateAndRender(newInput, &renderer);
+        draw(10, 20, RED, "aaaa");
         MXBXBlitbackbuffer(&renderer);
 
         int workCounter = get_millis() - startCounter;
+
+        // NOTE(Jovan): Try retaining constant FPS
         if(workCounter < TARGET_MS_PER_FRAME)
         {
             delay(TARGET_MS_PER_FRAME - workCounter);
