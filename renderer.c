@@ -21,7 +21,7 @@ void
 __drawline(i16 *backbuffer, i32 bufferW, i32 bufferH, i32 bufferPPS, i32 x0, i32 y0, i32 x1, i32 y1, u16 color)
 {
 	if(x0 < 0 || x0 >= bufferW * bufferPPS || y0 < 0 || y0 >= bufferH
-	|| x1 < 0 || x1 >= bufferW * bufferPPS || y0 < 0 || y0 >= bufferH)
+	|| x1 < 0 || x1 >= bufferW * bufferPPS || y1 < 0 || y1 >= bufferH)
 	{
 		return;
 	}
@@ -155,8 +155,25 @@ DrawLine(mxbx_renderer *renderer, i32 x0, i32 y0, i32 x1, i32 y1, u16 color)
 }
 
 void
-DrawRect(mxbx_renderer *renderer, i32 x, i32 y, i32 w, i32 h, u16 color)
+DrawRect(mxbx_renderer *renderer, i32 x, i32 y, i32 width, i32 height, u16 color)
 {
+	if(x < 0 || y < 0 || x >= 320 || y >= 240)
+	{
+		return;
+	}
+	int w = width;
+	int h = height;
+	int sx = x >> 2;
+	if(sx + w >= 80)
+	{
+		w = sx + w - 80 - 1;
+	}
+
+	if(y + h >= 240)
+	{
+		h = y + h - 240 - 1;
+	}
+
     __drawrect(renderer->Backbuffer, renderer->BackbufferW, renderer->BackbufferH,
         renderer->BackbufferPixelPerStride, x, y, w, h, color);
 }
@@ -164,7 +181,9 @@ DrawRect(mxbx_renderer *renderer, i32 x, i32 y, i32 w, i32 h, u16 color)
 void
 ClearBackbuffer()
 {
-	asm("push r1\npush r2\n push r3\nmov.w r1, %0\nmov.w r2, %1\nmov.w r3, %2\nblit\npop r3\npop r2\npop r1\n"
-		: /* No output */
-		: "i" (R_Backbuffer), "r" (__emptybackbuffer), "i" (BACKBUFFER_W * BACKBUFFER_H * 2));
+	for(u32 i = 0; i < BACKBUFFER_H * BACKBUFFER_W; ++i)
+		R_Backbuffer[i] = 0;
+	// asm("push r1\npush r2\n push r3\nmov.w r1, %0\nmov.w r2, %1\nmov.w r3, %2\nblit\npop r3\npop r2\npop r1\n"
+	// 	: /* No output */
+	// 	: "i" (R_Backbuffer), "r" (__emptybackbuffer), "i" (BACKBUFFER_W * BACKBUFFER_H * 2));
 }

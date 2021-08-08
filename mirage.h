@@ -44,7 +44,7 @@ typedef struct st_player
 	q16 Y;
 	q16 DX;
 	q16 DY;
-	q16 Angle;
+	i32 Angle;
 	q16 Sin;
 	q16 Cos;
 } player;
