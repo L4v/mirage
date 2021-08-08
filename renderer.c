@@ -1,42 +1,42 @@
 #include "renderer.h"
 
 void
-__drawpixel(short *backbuffer, int bufferW, int bufferH, int bufferPPS, int x, int y, unsigned short color)
+__drawpixel(i16 *backbuffer, i32 bufferW, i32 bufferH, i32 bufferPPS, i32 x, i32 y, u16 color)
 {
 	if(x < 0 || y < 0 || x >= bufferW * bufferPPS || y >= bufferH)
 	{
 		return;
 	}
-	int location = (x >> 2) + y * bufferW;
-	short* p = backbuffer + location;
-	short xOffset = (x % 4) * 4;
-	unsigned short xOffsetMask = 0xF000 >> xOffset;
-	unsigned short pColor = color & xOffsetMask;
-	unsigned short bgColor = (~xOffsetMask) & *p;
+	i32 location = (x >> 2) + y * bufferW;
+	i16* p = backbuffer + location;
+	i16 xOffset = (x % 4) * 4;
+	u16 xOffsetMask = 0xF000 >> xOffset;
+	u16 pColor = color & xOffsetMask;
+	u16 bgColor = (~xOffsetMask) & *p;
 	*p = pColor | bgColor;
 }
 
 // NOTE(Jovan): Bresenham's line drawing algorithm
 void
-__drawline(short *backbuffer, int bufferW, int bufferH, int bufferPPS, int x0, int y0, int x1, int y1, unsigned short color)
+__drawline(i16 *backbuffer, i32 bufferW, i32 bufferH, i32 bufferPPS, i32 x0, i32 y0, i32 x1, i32 y1, u16 color)
 {
 	if(x0 < 0 || x0 >= bufferW * bufferPPS || y0 < 0 || y0 >= bufferH
 	|| x1 < 0 || x1 >= bufferW * bufferPPS || y0 < 0 || y0 >= bufferH)
 	{
 		return;
 	}
-	int dx = x1 - x0;
-	int dy = y1 - y0;
-	int absdx = ABS(dx);
-	int absdy = ABS(dy);
-	int x = x0;
-	int y = y0;
+	i32 dx = x1 - x0;
+	i32 dy = y1 - y0;
+	i32 absdx = ABS(dx);
+	i32 absdy = ABS(dy);
+	i32 x = x0;
+	i32 y = y0;
 	__drawpixel(backbuffer, bufferW, bufferH, bufferPPS, x, y, color);
 	// NOTE(Jovan): Slope < 1
 	if(absdx > absdy)
 	{
-		int d = 2 * absdy - absdx;
-		for(int i = 0;
+		i32 d = 2 * absdy - absdx;
+		for(i32 i = 0;
 			i < absdx;
 			++i)
 		{
@@ -56,8 +56,8 @@ __drawline(short *backbuffer, int bufferW, int bufferH, int bufferPPS, int x0, i
 	else
 	{
 		// NOTE(Jovan): Slope >= 1
-		int d = 2 * absdx - absdy;
-		for(int i = 0;
+		i32 d = 2 * absdx - absdy;
+		for(i32 i = 0;
 			i < absdy;
 			++i)
 		{
@@ -77,24 +77,24 @@ __drawline(short *backbuffer, int bufferW, int bufferH, int bufferPPS, int x0, i
 }
 
 void
-__drawrect(short *backbuffer, int bufferW, int bufferH, int bufferPPS, int x, int y, int w, int h, unsigned short color) // x = 2 y = 1 w = 3 h = 1 c = 0x1234
+__drawrect(i16 *backbuffer, i32 bufferW, i32 bufferH, i32 bufferPPS, i32 x, i32 y, i32 w, i32 h, u16 color) // x = 2 y = 1 w = 3 h = 1 c = 0x1234
 {
-	short* p = backbuffer;
+	i16* p = backbuffer;
 	p += (x >> 2) + y * bufferW;
-	short* pRow;
-	short xRemainder = x % 4; // 2
+	i16* pRow;
+	i16 xRemainder = x % 4; // 2
 
 	if(w < 4)
 	{
-		unsigned short startMask = 0xFFFF << (4 - w) * 4; // 0xFFF0
+		u16 startMask = 0xFFFF << (4 - w) * 4; // 0xFFF0
 		startMask = startMask >> xRemainder * 4; // 0x00FF
-		unsigned short startBGMask = ~startMask; // 0xFF00
-		unsigned short startColor = startMask & (color >> xRemainder * 4); // 0x00FF & 0x0012
-		short trailLength = w - 4 + xRemainder; // 1
-		unsigned short trailingMask = 0xFFFF << (4 - trailLength) * 4; // 0xF000
-		unsigned short trailingBGMask = ~trailingMask; // 0x0FFF
-		unsigned short trailingColor = (color << (4 - xRemainder) * 4) & trailingMask; // 0x234
-		for(int i = 0;
+		u16 startBGMask = ~startMask; // 0xFF00
+		u16 startColor = startMask & (color >> xRemainder * 4); // 0x00FF & 0x0012
+		i16 trailLength = w - 4 + xRemainder; // 1
+		u16 trailingMask = 0xFFFF << (4 - trailLength) * 4; // 0xF000
+		u16 trailingBGMask = ~trailingMask; // 0x0FFF
+		u16 trailingColor = (color << (4 - xRemainder) * 4) & trailingMask; // 0x234
+		for(i32 i = 0;
 			i < h;
 			++i)
 		{
@@ -109,25 +109,25 @@ __drawrect(short *backbuffer, int bufferW, int bufferH, int bufferPPS, int x, in
 		return;
 	}
 
-	int columns = (xRemainder + w) >> 2;
-	short columnRemainder = (xRemainder + w) % 4;
+	i32 columns = (xRemainder + w) >> 2;
+	i16 columnRemainder = (xRemainder + w) % 4;
 
-	short startMask = (unsigned short)0xFFFF >> xRemainder * 4;
-	short startBGMask = ~startMask;
-	short startColor = color >> xRemainder * 4;
-	short trailingOffset = (4 - columnRemainder) * 4;
-	short trailingMask = (unsigned short)0xFFFF << trailingOffset;
-	short trailingBGMask = ~trailingMask;
-	short innerColor = (color << (4 - xRemainder) * 4) | (color >> xRemainder * 4);
-	short trailingColor = trailingMask & innerColor;
+	i16 startMask = (u16)0xFFFF >> xRemainder * 4;
+	i16 startBGMask = ~startMask;
+	i16 startColor = color >> xRemainder * 4;
+	i16 trailingOffset = (4 - columnRemainder) * 4;
+	i16 trailingMask = (u16)0xFFFF << trailingOffset;
+	i16 trailingBGMask = ~trailingMask;
+	i16 innerColor = (color << (4 - xRemainder) * 4) | (color >> xRemainder * 4);
+	i16 trailingColor = trailingMask & innerColor;
 
-	for(int i = 0;
+	for(i32 i = 0;
 		i < h;
 		++i)
 	{
 		pRow = p;
 		*(pRow++) = startColor | (startBGMask & *pRow);
-		for(int j = 1;
+		for(i32 j = 1;
 			j < columns;
 			++j)
 		{
@@ -142,21 +142,29 @@ __drawrect(short *backbuffer, int bufferW, int bufferH, int bufferPPS, int x, in
 }
 
 void
-DrawPixel(mxbx_renderer *renderer, int x, int y, unsigned short color)
+DrawPixel(mxbx_renderer *renderer, i32 x, i32 y, u16 color)
 {
     __drawpixel(renderer->Backbuffer, renderer->BackbufferW, renderer->BackbufferH, renderer->BackbufferPixelPerStride, x, y, color);
 }
 
 void
-DrawLine(mxbx_renderer *renderer, int x0, int y0, int x1, int y1, unsigned short color)
+DrawLine(mxbx_renderer *renderer, i32 x0, i32 y0, i32 x1, i32 y1, u16 color)
 {
     __drawline(renderer->Backbuffer, renderer->BackbufferW, renderer->BackbufferH,
         renderer->BackbufferPixelPerStride, x0, y0, x1, y1, color);
 }
 
 void
-DrawRect(mxbx_renderer *renderer, int x, int y, int w, int h, unsigned short color)
+DrawRect(mxbx_renderer *renderer, i32 x, i32 y, i32 w, i32 h, u16 color)
 {
     __drawrect(renderer->Backbuffer, renderer->BackbufferW, renderer->BackbufferH,
         renderer->BackbufferPixelPerStride, x, y, w, h, color);
+}
+
+void
+ClearBackbuffer()
+{
+	asm("push r1\npush r2\n push r3\nmov.w r1, %0\nmov.w r2, %1\nmov.w r3, %2\nblit\npop r3\npop r2\npop r1\n"
+		: /* No output */
+		: "i" (R_Backbuffer), "r" (__emptybackbuffer), "i" (BACKBUFFER_W * BACKBUFFER_H * 2));
 }

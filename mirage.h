@@ -1,5 +1,7 @@
 #ifndef MIRAGE_H
 
+#include "fixed.c"
+
 #define TARGET_MS_PER_FRAME 34 // ~30fps
 
 #define BLUE   0x1
@@ -10,13 +12,10 @@
 #define YELLOW 0x6
 #define WHITE  0x7
 
-#define ArrayCount(array) (sizeof(array) / sizeof((array)[0]))
-#define ABS(x) (((x) < 0) ? -(x) : (x))
-
 typedef struct button_state_st
 {
-    int HalfTransitionCount;
-    char EndedDown;
+    i32 HalfTransitionCount;
+    i8 EndedDown;
 } mxbx_button_state;
 
 typedef struct mxbx_keyboard_st
@@ -38,6 +37,24 @@ typedef struct mxbx_input_st
 {
     mxbx_keyboard KeyboardController;
 } mxbx_input;
+
+typedef struct st_player
+{
+	q16 X;
+	q16 Y;
+	q16 DX;
+	q16 DY;
+	q16 Angle;
+	q16 Sin;
+	q16 Cos;
+} player;
+
+// TODO(Jovan): Memory arenas?
+typedef struct st_game_state
+{
+    player Player;
+    i8 IsInitialized;
+} game_state;
 
 #define MIRAGE_H
 #endif

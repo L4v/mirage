@@ -7,37 +7,47 @@
 
 #include "mirage.c"
 
-#define BACKBUFFER_W 80
-#define BACKBUFFER_H 240
-
-short __backbuffer[BACKBUFFER_W * BACKBUFFER_H];
-
 void
-MXBXProcessKeyboardInput(mxbx_button_state *newState, char isDown)
+MXBXProcessKeyboardInput(mxbx_button_state *newState, i8 isDown)
 {
     newState->EndedDown = isDown;
     ++newState->HalfTransitionCount;
 }
 
-char
+i8
 MXBXHandleEvents(mxbx_input *in)
 {
-    short vkp = is_key_pressed();
-    short vkr = is_key_released();
-    short keyCode = 0;
+    i16 vkp = is_key_pressed();
+    i16 vkr = is_key_released();
+    i16 keyCode = 0;
     if(!vkp && vkr || vkp && !vkr)
     {
         keyCode = vkp | vkr;
     }
-    char shouldQuit = 0;
+    i8 shouldQuit = 0;
     if(vkp || vkr)
     {
-        char isDown = vkp != 0;
+        i8 isDown = vkp != 0;
         switch(keyCode)
         {
+            case VK_UP_ARROW:
+            {
+                MXBXProcessKeyboardInput(&in->KeyboardController.MoveForward, isDown);
+            } break;
+
+            case VK_DOWN_ARROW:
+            {
+                MXBXProcessKeyboardInput(&in->KeyboardController.MoveBackward, isDown);
+            } break;
+
             case VK_LEFT_ARROW:
             {
                 MXBXProcessKeyboardInput(&in->KeyboardController.StrafeLeft, isDown);
+            } break;
+
+            case VK_RIGHT_ARROW:
+            {
+                MXBXProcessKeyboardInput(&in->KeyboardController.StrafeRight, isDown);
             } break;
 
             case VK_ESC:
@@ -50,11 +60,12 @@ MXBXHandleEvents(mxbx_input *in)
 }
 
 void
-MXBXBlitbackbuffer(mxbx_renderer *renderer)
+MXBXBlitbackbuffer()
 {
+    // TODO(Jovan): //(renderer->BackbufferW * renderer->BackbufferH * renderer->BackbufferStride)); fix?
 	asm("push r1\npush r2\n push r3\nmov.w r1, 1024\nmov.w r2, %0\nmov.w r3, %1\nblit\npop r3\npop r2\npop r1\n"
 		: /* No output */
-		: "r" (renderer->Backbuffer), "g" (renderer->BackbufferW * renderer->BackbufferH * renderer->BackbufferStride));
+		: "r" (R_Backbuffer), "i" (BACKBUFFER_W * BACKBUFFER_H * 2));
 }
 
 int
@@ -63,8 +74,9 @@ main()
     init_stdio();
     video_mode(1);
     cls();
-    char str[256];
-    int startCounter = get_millis();
+    i8 str[256];
+
+    LUTInit();
 
     mxbx_input inputs[2];
     mxbx_input *newInput = &inputs[0];
@@ -77,7 +89,12 @@ main()
     renderer.BackbufferH = BACKBUFFER_H;
     renderer.BackbufferStride = 2;
     renderer.BackbufferPixelPerStride = 4;
-    renderer.Backbuffer = __backbuffer;
+    renderer.Backbuffer = R_Backbuffer;
+
+    // TODO(Jovan): Separate game_state from platform layer using memory arenas
+    game_state state = {0};
+
+    i32 startCounter = get_millis();
     // GAME LOOP
     while(1)
     {
@@ -85,7 +102,7 @@ main()
         mxbx_keyboard *newKeyboardController = &newInput->KeyboardController;
         *newKeyboardController = (mxbx_keyboard){0};
 
-        for(int buttonIndex = 0;
+        for(i32 buttonIndex = 0;
             buttonIndex < ArrayCount(newKeyboardController->Buttons);
             ++buttonIndex)
         {
@@ -98,19 +115,17 @@ main()
             cls();
             break;
         }
+        UpdateAndRender(&state, newInput, &renderer);
+        MXBXBlitbackbuffer();
 
-        UpdateAndRender(newInput, &renderer);
-        draw(10, 20, RED, "aaaa");
-        MXBXBlitbackbuffer(&renderer);
-
-        int workCounter = get_millis() - startCounter;
+        i32 workCounter = get_millis() - startCounter;
 
         // NOTE(Jovan): Try retaining constant FPS
         if(workCounter < TARGET_MS_PER_FRAME)
         {
             delay(TARGET_MS_PER_FRAME - workCounter);
         }
-        int endCounter = get_millis();
+        i32 endCounter = get_millis();
         sprintf(str, "MS Per frame: %d", endCounter - startCounter);
         draw(10, 10, RED, str);
         startCounter = endCounter;
