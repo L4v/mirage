@@ -112,36 +112,36 @@ HandleInput(game_state *state, mxbx_input *input)
 
 }
 
-// void
-// RenderMinimap(game_state* state, mxbx_renderer *renderer, i32 x, i32 y)
-// {
-// 	for(i32 i = 0;
-// 		i < MapX;
-// 		++i)
-// 	{
-// 		for(i32 j = 0;
-// 			j < MapY;
-// 			++j)
-// 		{
-// 			i16 color = 0;
-// 			i16 tile = Map[j * MapX + i];
-// 			if(tile == 1) color = 0x7777;
-// 			else if(tile == 2) color = 0x4444;
-// 			DrawRect(renderer, x + i * MapTileSize + 1, y + j * MapTileSize + 1, (MapTileSize - 1), (MapTileSize - 1), color);
-// 		}
-// 	}
+void
+RenderMinimap(game_state* state, mxbx_renderer *renderer, i32 x, i32 y)
+{
+	for(i32 i = 0;
+		i < MapX;
+		++i)
+	{
+		for(i32 j = 0;
+			j < MapY;
+			++j)
+		{
+			i16 color = 0;
+			i16 tile = Map[j][i];
+			if(tile == 1) color = 0x7777;
+			else if(tile == 2) color = 0x4444;
+			DrawRect(renderer, x + i * MapTileSize + 1, y + j * MapTileSize + 1, (MapTileSize - 1), (MapTileSize - 1), color);
+		}
+	}
     
-// 	i32 px = state->Player.X >> FP_SCALE;
-// 	i32 py = state->Player.Y >> FP_SCALE;
-// 	i32 mx = px >> 2;
-// 	i32 my = py >> 2;
-// 	DrawRect(renderer, mx, my, 3, 3, 0x6666);
-// 	i32 cos = __fparsh(FPMul(state->Player.DirX, 0x50000), FP_SCALE);
-// 	i32 sin = __fparsh(FPMul(state->Player.DirY, 0x50000), FP_SCALE);
-// 	i32 lx = mx + cos;
-// 	i32 ly = my + sin;
-// 	DrawLine(renderer, mx + 1, my + 1, lx, ly, 0x6666);
-// }
+	i32 px = state->Player.X >> FP_SCALE;
+	i32 py = state->Player.Y >> FP_SCALE;
+	i32 mx = px << 2;
+	i32 my = py << 2;
+	DrawRect(renderer, mx, my, 3, 3, 0x6666);
+	i32 cos = __fparsh(FPMul(state->Player.DirX, 0x50000), FP_SCALE);
+	i32 sin = __fparsh(FPMul(state->Player.DirY, 0x50000), FP_SCALE);
+	i32 lx = mx + cos;
+	i32 ly = my + sin;
+	DrawLine(renderer, mx + 1, my + 1, lx, ly, 0x6666);
+}
 
 float ToFloat(int x) {
     return x / (float) (1 << FP_SCALE);
@@ -152,7 +152,7 @@ int ToFixed(float x) {
 }
 
 void
-Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer)
+Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer, i32 xOffset, i32 yOffset)
 {
     i32 w = 160;
     i32 h = 120;
@@ -271,7 +271,7 @@ Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer)
             drawEnd = h - 1;
         }
 
-        DrawLine(renderer, x, drawStart, x, drawEnd, 0x1111);
+        DrawLine(renderer, x + xOffset, drawStart + yOffset, x + xOffset, drawEnd + yOffset, 0x1111);
     }
 }
 
@@ -293,8 +293,7 @@ UpdateAndRender(game_state *state, mxbx_input *input, mxbx_renderer *renderer)
     HandleInput(state, input);
     ClearBackbuffer();
     // NOTE(Jovan): 0, 0 while debugging
-    // RenderMinimap(state, renderer, 0, 0);
+    RenderMinimap(state, renderer, 0, 0);
 
-    // NOTE(Jovan): Raycast
-    Raycast(state, input, renderer);
+    Raycast(state, input, renderer, 60, 80);
 }

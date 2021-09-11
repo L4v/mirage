@@ -127,8 +127,8 @@ main()
             delay(TARGET_MS_PER_FRAME - workCounter);
         }
         i32 endCounter = get_millis();
-        sprintf(str, "MS Per frame: %d", endCounter - startCounter);
-        draw(10, 10, RED, str);
+        // sprintf(str, "MS Per frame: %d", endCounter - startCounter);
+        // draw(10, 10, RED, str);
         startCounter = endCounter;
 
         mxbx_input *tmp = newInput;
