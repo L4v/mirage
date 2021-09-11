@@ -4,6 +4,7 @@
 #include <consts.h>
 #include <stdio.h>
 #include <graphics.h>
+#include <floatimpl.h>
 
 #include "mirage.c"
 

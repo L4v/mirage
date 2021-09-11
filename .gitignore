@@ -5,3 +5,6 @@
 *.s
 *.bin
 *.sym
+# Questions
+questions.txt
+

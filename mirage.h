@@ -42,11 +42,10 @@ typedef struct st_player
 {
 	q16 X;
 	q16 Y;
-	q16 DX;
-	q16 DY;
-	i32 Angle;
-	q16 Sin;
-	q16 Cos;
+	q16 DirX;
+	q16 DirY;
+    q16 PlaneX;
+    q16 PlaneY;
 } player;
 
 // TODO(Jovan): Memory arenas?

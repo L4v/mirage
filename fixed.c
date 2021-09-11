@@ -21,8 +21,8 @@ FPDiv(q16 x, q16 y)
 	{
 		return 0;
 	}
-	return __sdiv(x << 8, y) << 8;
-	// return ((x << 8) / y) << 8;
+	//return __sdiv(x << 8, y) << 8;
+	 return ((x << 8) / y) << 8;
 }
 
 // NOTE(Jovan): Extended integer range for less precision
@@ -33,7 +33,18 @@ FPDiv79(q16 x, q16 y)
 	{
 		return 0;
 	}
-	return __sdiv(x << 7, y) << 9;
+	//return __sdiv(x << 7, y) << 9;
+    return ((x << 7) / y) << 9;
+}
+
+q16
+FPDiv511(q16 x, q16 y)
+{
+	if(y == 0)
+	{
+		return 0;
+	}
+	return ((x << 5) / y) << 11;
 }
 
 q16
