@@ -16,9 +16,73 @@ __drawpixel(i16 *backbuffer, i32 bufferW, i32 bufferH, i32 bufferPPS, i32 x, i32
 	*p = pColor | bgColor;
 }
 
+// NOTE(Jovan): Extremely Fast Line Algorithm
+// http://www.edepot.com/algorithm.html
+void
+__efla(i16 *backbuffer, i32 bufferW, i32 bufferH, i32 bufferPPS, i32 x0, i32 y0, i32 x1, i32 y1, u16 color)
+{
+	u8 yLonger = 0;
+	i32 shortLen = y1 - y0;
+	i32 longLen = x1 - x0;
+	if (ABS(shortLen) > ABS(longLen))
+	{
+		i32 swap = shortLen;
+		shortLen = longLen;
+		longLen = swap;				
+		yLonger = 1;
+	}
+	i32 decInc;
+	if (longLen == 0)
+	{
+		decInc=0;
+	}
+	else
+	{
+		decInc = (shortLen << FP_SCALE) / longLen;
+	}
+
+	if (yLonger) 
+	{
+		if (longLen > 0)
+		{
+			longLen += y0;
+			for (i32 j = 0x8000 + (x0 << FP_SCALE); y0 <= longLen; ++y0)
+			{
+				__drawpixel(backbuffer, bufferW, bufferH, bufferPPS, j >> FP_SCALE, y0, color);
+				j+=decInc;
+			}
+			return;
+		}
+		longLen += y0;
+		for (i32 j = 0x8000 + (x0 << 16); y0 >= longLen; --y0)
+		{
+			__drawpixel(backbuffer, bufferW, bufferH, bufferPPS, j >> FP_SCALE, y0, color);
+			j -= decInc;
+		}
+		return;	
+	}
+
+	if (longLen>0)
+	{
+		longLen += x0;
+		for (i32 j = 0x8000 + (y0 << FP_SCALE); x0 <= longLen; ++x0)
+		{
+			__drawpixel(backbuffer, bufferW, bufferH, bufferPPS, x0, j >> FP_SCALE, color);
+			j += decInc;
+		}
+		return;
+	}
+	longLen += x0;
+	for (int j= 0x8000 + (y0 << FP_SCALE); x0 >= longLen; --x0)
+	{
+		__drawpixel(backbuffer, bufferW, bufferH, bufferPPS, x0, j >> FP_SCALE, color);
+		j -= decInc;
+	}
+}
+
 // NOTE(Jovan): Bresenham's line drawing algorithm
 void
-__drawline(i16 *backbuffer, i32 bufferW, i32 bufferH, i32 bufferPPS, i32 x0, i32 y0, i32 x1, i32 y1, u16 color)
+__bresenhamline(i16 *backbuffer, i32 bufferW, i32 bufferH, i32 bufferPPS, i32 x0, i32 y0, i32 x1, i32 y1, u16 color)
 {
 	if(x0 < 0 || x0 >= bufferW * bufferPPS || y0 < 0 || y0 >= bufferH
 	|| x1 < 0 || x1 >= bufferW * bufferPPS || y1 < 0 || y1 >= bufferH)
@@ -150,8 +214,10 @@ DrawPixel(mxbx_renderer *renderer, i32 x, i32 y, u16 color)
 void
 DrawLine(mxbx_renderer *renderer, i32 x0, i32 y0, i32 x1, i32 y1, u16 color)
 {
-    __drawline(renderer->Backbuffer, renderer->BackbufferW, renderer->BackbufferH,
-        renderer->BackbufferPixelPerStride, x0, y0, x1, y1, color);
+    // __bresenhamline(renderer->Backbuffer, renderer->BackbufferW, renderer->BackbufferH,
+    //     renderer->BackbufferPixelPerStride, x0, y0, x1, y1, color);
+	__efla(renderer->Backbuffer, renderer->BackbufferW, renderer->BackbufferH,
+		renderer->BackbufferPixelPerStride, x0, y0, x1, y1, color);
 }
 
 void
@@ -181,9 +247,9 @@ DrawRect(mxbx_renderer *renderer, i32 x, i32 y, i32 width, i32 height, u16 color
 void
 ClearBackbuffer()
 {
-	// for(u32 i = 0; i < BACKBUFFER_H * BACKBUFFER_W; ++i)
-	// 	R_Backbuffer[i] = 0;
-	asm("push r1\npush r2\n push r3\nmov.w r1, %0\nmov.w r2, %1\nmov.w r3, %2\nblit\npop r3\npop r2\npop r1\n"
-		: /* No output */
-		: "i" (R_Backbuffer), "r" (__emptybackbuffer), "i" (BACKBUFFER_W * BACKBUFFER_H * 2));
+	for(u32 i = 0; i < BACKBUFFER_H * BACKBUFFER_W; ++i)
+		R_Backbuffer[i] = 0;
+	// asm("push r1\npush r2\n push r3\nmov.w r1, %0\nmov.w r2, %1\nmov.w r3, %2\nblit\npop r3\npop r2\npop r1\n"
+	// 	: /* No output */
+	// 	: "i" (R_Backbuffer), "r" (__emptybackbuffer), "i" (BACKBUFFER_W * BACKBUFFER_H * 2));
 }

@@ -143,11 +143,11 @@ RenderMinimap(game_state* state, mxbx_renderer *renderer, i32 x, i32 y)
 	DrawLine(renderer, mx + 1, my + 1, lx, ly, 0x6666);
 }
 
-float ToFloat(int x) {
+float ToFloat(q16 x) {
     return x / (float) (1 << FP_SCALE);
 }
 
-int ToFixed(float x) {
+q16 ToFixed(float x) {
     return x * (float)(1 << FP_SCALE);
 }
 
@@ -165,7 +165,7 @@ Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer, i32 xOffs
     // NOTE(Jovan): "Optimization" with no significant improvement`
     // q16 cameraX2 = 0;
     // q16 cameraXInc = ToFixed(1.0f / (float)w); //FPDiv511(0x10000, w << FP_SCALE);
-    for(int x = 0; x < w; x++)
+    for(i32 x = 0; x < w; x++)
     {
         // q16 cameraX = FPMul(x << (FP_SCALE + 1), cameraXInc) - 0x10000;
         // NOTE(Jovan): Calculating ray direction via camera plane
@@ -184,40 +184,40 @@ Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer, i32 xOffs
 
         // NOTE(Jovan): Distance from one X/Y edge to another
         // NOTE(Jovan): Lodev.org optimization
-        int deltaDistY = ABS(FPDiv(0x10000, rayDirY));
-        int deltaDistX = ABS(FPDiv(0x10000, rayDirX));
+        q16 deltaDistY = ABS(FPDiv(0x10000, rayDirY));
+        q16 deltaDistX = ABS(FPDiv(0x10000, rayDirX));
 
         //what direction to step in x or y-direction (either +1 or -1)
-        int stepX;
-        int stepY;
+        q16 stepX;
+        q16 stepY;
 
         // NOTE(Jovan): hit and NS/EW collision flags
-        int hit = 0;
-        int side;
+        u32 hit = 0;
+        u32 side;
 
         // NOTE(Jovan): Setting initial distance values for iterations
         if(rayDirX & 0xF0000000)
         {
             stepX = 0xFFFF0000;
-            int fix = posX - mapX;
+            q16 fix = posX - mapX;
             sideDistX = FPMul(fix, deltaDistX);
         }
         else
         {
             stepX = 0x10000;
-            int fix = mapX + 0x10000 - posX;
+            q16 fix = mapX + 0x10000 - posX;
             sideDistX = FPMul(fix, deltaDistX);
         }
         if(rayDirY & 0xF0000000)
         {
             stepY = 0xFFFF0000;
-            int fix = posY - mapY;
+            q16 fix = posY - mapY;
             sideDistY = FPMul(fix, deltaDistY);
         }
         else
         {
             stepY = 0x10000;
-            int fix = mapY + 0x10000 - posY;
+            q16 fix = mapY + 0x10000 - posY;
             sideDistY = FPMul(fix, deltaDistY);
         }
 
@@ -245,27 +245,28 @@ Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer, i32 xOffs
 
         // NOTE(Jovan): lodev.org trick, calculate perpendicular distance,
         // distance from camera plane to wall as to avoid fish-eye effect
-        int perpWallDist;
+        q16 perpWallDist;
         if(side == 0)
         {
-            int res = mapX - posX + FPDiv((0x10000 - stepX), 0x20000);
+            q16 res = mapX - posX + FPDiv((0x10000 - stepX), 0x20000);
             perpWallDist = FPDiv(res, rayDirX);
         }
         else
         {
-            int res = mapY - posY + FPDiv((0x10000 - stepY), 0x20000);
+            q16 res = mapY - posY + FPDiv((0x10000 - stepY), 0x20000);
             perpWallDist = FPDiv(res, rayDirY);
         }
 
         // NOTE(Jovan): Draw vertical scan lines
-        int lineHeight = ToFloat(FPDiv79(ToFixed(h), perpWallDist));
+        // Doesn't work with i32????
+        int lineHeight = (FPDiv79(ToFixed(h), perpWallDist)) >> FP_SCALE;
 
-        int drawStart = -lineHeight / 2 + h / 2;
+        i32 drawStart = -lineHeight / 2 + h / 2;
         if(drawStart < 0)
         {
             drawStart = 0;
         }
-        int drawEnd = lineHeight / 2 + h / 2;
+        i32 drawEnd = lineHeight / 2 + h / 2;
         if(drawEnd >= h)
         {
             drawEnd = h - 1;
