@@ -92,12 +92,12 @@ main()
     renderer.BackbufferPixelPerStride = 4;
     renderer.Backbuffer = R_Backbuffer;
 
-    
-	for(u32 i = 0; i < BACKBUFFER_H * BACKBUFFER_W; ++i)
-        if((i / BACKBUFFER_W) % 2 == 0)
-		    __emptybackbuffer[i] = 0x0707;
-        else
-		    __emptybackbuffer[i] = 0x7070;
+    // NOTE(Jovan): Dithering pattern
+	// for(u32 i = 0; i < BACKBUFFER_H * BACKBUFFER_W; ++i)
+    //     if((i / BACKBUFFER_W) % 2 == 0)
+	// 	    __emptybackbuffer[i] = 0x0707;
+    //     else
+	// 	    __emptybackbuffer[i] = 0x7070;
 
     // TODO(Jovan): Separate game_state from platform layer using memory arenas
     game_state state = {0};

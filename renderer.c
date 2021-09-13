@@ -247,9 +247,9 @@ DrawRect(mxbx_renderer *renderer, i32 x, i32 y, i32 width, i32 height, u16 color
 void
 ClearBackbuffer()
 {
-	for(u32 i = 0; i < BACKBUFFER_H * BACKBUFFER_W; ++i)
-		R_Backbuffer[i] = 0;
-	// asm("push r1\npush r2\n push r3\nmov.w r1, %0\nmov.w r2, %1\nmov.w r3, %2\nblit\npop r3\npop r2\npop r1\n"
-	// 	: /* No output */
-	// 	: "i" (R_Backbuffer), "r" (__emptybackbuffer), "i" (BACKBUFFER_W * BACKBUFFER_H * 2));
+	// for(u32 i = 0; i < BACKBUFFER_H * BACKBUFFER_W; ++i)
+	// 	R_Backbuffer[i] = 0;
+	asm("push r1\npush r2\n push r3\nmov.w r1, %0\nmov.w r2, %1\nmov.w r3, %2\nblit\npop r3\npop r2\npop r1\n"
+		: /* No output */
+		: "i" (R_Backbuffer), "r" (__emptybackbuffer), "i" (BACKBUFFER_W * BACKBUFFER_H * 2));
 }

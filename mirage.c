@@ -14,11 +14,11 @@ i32 Map[][16] =
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -222,6 +222,7 @@ Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer, i32 xOffs
         }
 
         // NOTE(Jovan): DDA
+        i32 tile;
         while (hit == 0)
         {
             if(sideDistX < sideDistY)
@@ -236,8 +237,8 @@ Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer, i32 xOffs
                 mapY += stepY;
                 side = 1;
             }
-            
-            if(Map[mapY >> FP_SCALE][mapX >> FP_SCALE] > 0) 
+            tile = Map[mapY >> FP_SCALE][mapX >> FP_SCALE];
+            if(tile > 0) 
             {
                 hit = 1;
             };
@@ -246,15 +247,18 @@ Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer, i32 xOffs
         // NOTE(Jovan): lodev.org trick, calculate perpendicular distance,
         // distance from camera plane to wall as to avoid fish-eye effect
         q16 perpWallDist;
+        // q16 wallX;
         if(side == 0)
         {
             q16 res = mapX - posX + FPDiv((0x10000 - stepX), 0x20000);
             perpWallDist = FPDiv(res, rayDirX);
+            // wallX = posY + FPMul(perpWallDist, rayDirY);
         }
         else
         {
             q16 res = mapY - posY + FPDiv((0x10000 - stepY), 0x20000);
             perpWallDist = FPDiv(res, rayDirY);
+            // wallX = posX + FPMul(perpWallDist, rayDirX);
         }
 
         // NOTE(Jovan): Draw vertical scan lines
@@ -271,8 +275,7 @@ Raycast(game_state *state, mxbx_input *input, mxbx_renderer *renderer, i32 xOffs
         {
             drawEnd = h - 1;
         }
-
-        DrawLine(renderer, x + xOffset, drawStart + yOffset, x + xOffset, drawEnd + yOffset, 0x1111);
+        DrawLine(renderer, x + xOffset, drawStart + yOffset, x + xOffset, drawEnd + yOffset, tile == 1 ? 0x1111 : 0x2222);
     }
 }
 
