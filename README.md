@@ -1,4 +1,4 @@
-# MIRAGE  (WIP)
+# MIRAGE
 
 ![logo](imgs/logo.png)
 ![preview](imgs/preview.gif)
